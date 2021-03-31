@@ -2,10 +2,16 @@
 
 {% block body %}
 <h1>トップページ</h1>
+<a href='/create' role='button'>CREATE NEW TASK</a>
 <!--posts...データベースにあるすべての投稿、app.pyで設定した-->
 <!--変数名は{ 変数名 }のように書く-->
 {% for post in posts %}
     <h2>タイトル：{{ post.title }}</h2>
     <p>期限：{{ post.due.date() }}</p>
+    <!--詳細ページに飛べるurlを設置-->
+    <a href='/detail/{{ post.id }}' role='button'>Detail</a>
+    <a href='/delete/{{ post.id }}' role='button'>Delete</a>
+    <a href='/update/{{ post.id }}' role='button'>Update</a>
+    
 {% endfor %}
 {% endblock %}

@@ -29,7 +29,8 @@ class Post(db.Model):
 def index():
     if request.method == 'GET':
         #データベースからすべての投稿を取り出している
-        posts=Post.query.all()
+        #締め切りに近い順
+        posts=Post.query.order_by(Post.due).all()
         #トップページに投稿を渡す
         return render_template('index.html',posts=posts)
     else:
@@ -40,7 +41,7 @@ def index():
 
         #dueを文字列型から日付型に
         due=datetime.strptime(due, '%Y-%m-%d')
-        
+
         #2.new_postインスタンスを作る(データベースを作る)
         new_post=Post(title=title,detail=detail,due=due)
 
@@ -52,10 +53,44 @@ def index():
         db.session.add(new_post)
         db.session.commit()
         return redirect('/')
-    
+
+#タスクを作る    
 @app.route('/create')
 def create():
     return render_template('create.html')
+
+#詳細ページ
+@app.route('/detail/<int:id>')
+def read(id):
+    #該当するidの投稿内容を取得し、detail.htmlに渡している
+    post = Post.query.get(id)
+    return render_template('detail.html',post=post)
+
+#タスクの削除
+@app.route('/delete/<int:id>')
+def delete(id):
+    post = Post.query.get(id)
+
+    db.session.delete(post)
+    db.session.commit()
+    return redirect('/')
+
+@app.route('/update/<int:id>', methods=['GET', 'POST'])
+def update(id):
+    post=Post.query.get(id)
+
+    #GETメッソドのとき、今まで書かれていた内容を表示
+    if request.method=='GET':
+        return render_template('update.html', post=post)
+
+    #POSTメソッドのとき、変更内容を更新
+    else:
+        post.title = request.form.get('title')
+        post.detail = request.form.get('detail')
+        post.due = datetime.strptime(request.form.get('due'), '%Y-%m-%d')
+
+        db.session.commit()
+        return redirect('/')
 
 if __name__ == '__main__':
     app.run(debug=True)
